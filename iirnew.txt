@@ -1,0 +1,43 @@
+clear ; close all;
+M=31;
+fs1=1000;fs2=6000;fp1=2000;fp2=4000;Fs=15000 ;  %   to make it low/high pass, just remove fs2 and fp2 and Fs=8000;(ALSO fp=2000 and fs=1000 for high pass and reverse for lowpass)
+As=60;Ap=2;
+ws=[2*fs1/Fs 2*fs2/Fs];                         %ws=2*fs/Fs for low/high pass
+wp=[2*fp1/Fs 2*fp2/Fs];                         %wp=2*fp/Fp for low/high pass
+[n,wn]=buttord(wp,ws,Ap,As);                    % to make chebyshev change buttord to cheb1ord and butter to cheby1(n,Ap,wp)
+[b,a]=butter(n,wn,"stop");                      %to make it bandpass, just change "stop" to "bandpass" and for high pass put "high"
+[H,f]=freqz(b,a,2048,Fs);
+f1=500;f2=2000;f3=6500;Fs2=15000;
+t=0:(1/Fs2):(6/min([f1 f2 f3 ]));
+x=sin(2*pi*f1*t)+sin(2*pi*f2*t)+sin(2*pi*f3*t);
+N=length(x);
+X=abs(fft(x,N));
+y=filter(b,a,x);
+Ny=length(y);
+Y=abs(fft(y,Ny));
+fas=Fs2*(0:N-1)/N;
+an=angle(H);
+a=20*log10(abs(H/max(abs(H))));
+
+subplot(411);
+plot(fas,X/max(X),'r');
+set(gca,'xlim',[0 Fs/2],'ylim',[0 2]);
+xlabel('frequency');
+ylabel('input spectrum');
+
+subplot(414);
+plot(fas,Y/max(Y),'g');
+set(gca,'xlim',[0 Fs/2],'ylim',[0 2]);
+xlabel('frequency');
+ylabel('output spectrum');
+
+subplot(412);
+plot(f,an,'b');
+xlabel('frequency');
+ylabel('phase');
+
+subplot(413);
+plot(f,a,'m');
+xlabel('frequency');
+ylabel('magnitude');
+
